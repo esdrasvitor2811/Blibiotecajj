@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblioteca Biro-Biro</title>
+    <style>
+        /* Estilos CSS incluídos diretamente */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-image: url('/Imagens/fundo.jpeg'); /* Caminho para a imagem */
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            margin-top: 50px;
+            padding: 20px;
+            font-size: 56px;
+            color: rgba(212, 206, 206, 0.9);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 19px;
+            border-radius: 30px;
+            background-color: rgba(94, 56, 0, 0.8);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: rgba(94, 56, 0, 1);
+        }
+        .formulario_padrao {
+            margin: 20px auto;
+            padding: 20px;
+            width: 80%;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            color: white;
+        }
+        input {
+            height: 40px;
+            padding: 10px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            margin: 5px 0;
+            width: 100%;
+            transition: border 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border: 1px solid rgba(255, 215, 0, 0.8);
+        }
+        #acervo .livro {
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            margin: 15px auto;
+            padding: 15px;
+            width: 80%;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.6);
+        }
+        #acervo-vazio {
+            font-size: 18px;
+            font-weight: bold;
+            color: rgba(236, 236, 236, 0.8);
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Bem-vindo à Biblioteca Biro-Biro</h1>
+
+    <!-- Seção para Adicionar Livros -->
+    <div class="formulario_padrao">
+        <h2>Adicionar Livro</h2>
+        <form id="formulario" onsubmit="adicionarLivro(event)">
+            <input type="text" id="titulo" placeholder="Título" required>
+            <input type="text" id="autor" placeholder="Autor" required>
+            <input type="number" id="ano" placeholder="Ano" required>
+            <input type="text" id="genero" placeholder="Gênero" required>
+            <button type="submit">Adicionar</button>
+        </form>
+    </div>
+
+    <!-- Seção para Listar Livros -->
+    <div class="formulario_padrao">
+        <h2>Nosso Acervo</h2>
+        <button onclick="listarLivros()">Listar Livros</button>
+        <div id="acervo"></div>
+    </div>
+
+    <!-- Seção para Excluir Livros -->
+    <div class="formulario_padrao">
+        <h2>Excluir Livro</h2>
+        <form id="formularioExcluir" onsubmit="excluirLivro(event)">
+            <input type="text" id="tituloExcluir" placeholder="Título do Livro" required>
+            <button type="submit">Excluir</button>
+        </form>
+    </div>
+
+    <!-- Scripts JavaScript -->
+    <script>
+        class Livro {
+            constructor(titulo, autor, anoPublicacao, genero) {
+                this.titulo = titulo;
+                this.autor = autor;
+                this.anoPublicacao = anoPublicacao;
+                this.genero = genero;
+            }
+        }
+
+        class Biblioteca {
+            constructor() {
+                this.biblioteca = JSON.parse(localStorage.getItem('biblioteca')) || []; // Carrega livros do localStorage
+            }
+
+            adicionarLivro(event) {
+                event.preventDefault(); // Previne o envio do formulário
+
+                const titulo = document.getElementById('titulo').value;
+                const autor = document.getElementById('autor').value;
+                const anoPublicacao = document.getElementById('ano').value;
+                const genero = document.getElementById('genero').value;
+
+                const livro = new Livro(titulo, autor, anoPublicacao, genero); // Cria um novo livro
+                this.biblioteca.push(livro); // Adiciona o livro ao array
+
+                localStorage.setItem('biblioteca', JSON.stringify(this.biblioteca)); // Salva no localStorage
+
+                alert(`O livro "${titulo}" foi adicionado ao acervo.`);
+                document.getElementById('formulario').reset();
+            }
+
+            listarLivros() {
+                const acervoDiv = document.getElementById('acervo');
+                acervoDiv.innerHTML = ''; // Limpa a área antes de exibir
+
+                if (this.biblioteca.length === 0) {
+                    acervoDiv.innerHTML = '<p id="acervo-vazio">O nosso acervo está vazio.</p>';
+                } else {
+                    this.biblioteca.forEach(livro => {
+                        const livroDiv = document.createElement('div');
+                        livroDiv.className = 'livro';
+                        livroDiv.innerHTML = `
+                            <strong>Título:</strong> ${livro.titulo} <br>
+                            <strong>Autor:</strong> ${livro.autor} <br>
+                            <strong>Ano:</strong> ${livro.anoPublicacao} <br>
+                            <strong>Gênero:</strong> ${livro.genero}
+                            <hr>
+                        `;
+                        acervoDiv.appendChild(livroDiv);
+                    });
+                }
+            }
+
+            excluirLivro(titulo) {
+                const indice = this.biblioteca.findIndex(livro => livro.titulo === titulo);
+                if (indice !== -1) {
+                    this.biblioteca.splice(indice, 1);
+                    localStorage.setItem('biblioteca', JSON.stringify(this.biblioteca)); // Atualiza o localStorage
+                    alert(`O livro "${titulo}" foi excluído do acervo.`);
+                } else {
+                    alert(`O livro "${titulo}" não foi encontrado no acervo.`);
+                }
+            }
+        }
+
+        // Instancia a classe Biblioteca
+        const biblioteca = new Biblioteca();
+
+        // Funções que podem ser chamadas a partir do HTML
+        function adicionarLivro(event) {
+            biblioteca.adicionarLivro(event);
+        }
+
+        function listarLivros() {
+            biblioteca.listarLivros();
+        }
+
+        function excluirLivro(event) {
+            event.preventDefault(); // Previne o envio do formulário
+
+            const titulo = document.getElementById('tituloExcluir').value; // Obtém o título do livro
+            biblioteca.excluirLivro(titulo); // Chama a função para excluir o livro
+            document.getElementById('formularioExcluir').reset(); // Limpa o formulário
+        }
+    </script>
+
+</body>
+</html>
